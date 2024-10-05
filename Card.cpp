@@ -169,15 +169,14 @@ bool Card::is_trump(Suit trump) const
 
 // This "friend declaration" allows the implementation of operator>>
 // to access private member variables of the Card class.
-std::istream & operator>>(std::istream &is, Card &card)
+/*std::istream & operator>>(std::istream &is, Card &card)
 {
-  string str;
-  if(is >> str) {
-    card.get_rank() >> string_to_rank(str);
-    card.get_suit() >> string_to_suit(str);
-  }
+  Rank r;
+  Suit s;
+  is >> r >> s;
+  card = Card(r, s);
   return is;
-}
+}*/
 
 //EFFECTS Prints Card to stream, for example "Two of Spades"
 std::ostream & operator<<(std::ostream &os, const Card &card)
@@ -191,7 +190,12 @@ std::ostream & operator<<(std::ostream &os, const Card &card)
 //     which means it is allowed to access card.rank and card.suit.
 std::istream & operator>>(std::istream &is, Card &card)
 {
-  
+  Rank r;
+  Suit s;
+  string of;
+  is >> r >> of >> s;
+  card = Card(r, s);
+  return is;
 }
 
 //EFFECTS Returns true if lhs is lower value than rhs.
@@ -259,32 +263,49 @@ bool operator!=(const Card &lhs, const Card &rhs)
 Suit Suit_next(Suit suit)
 {
   if(suit == SPADES)
-  {return CLUBS;}
+    return CLUBS;
   if(suit == CLUBS)
-  {return SPADES;}
+    return SPADES;
   if(suit == HEARTS)
-  {return DIAMONDS;}
+    return DIAMONDS;
   if(suit == DIAMONDS)
-  {return HEARTS;}
+    return HEARTS;
+  return suit;
 }
 
 //EFFECTS Returns true if a is lower value than b.  Uses trump to determine
 // order, as described in the spec.
 bool Card_less(const Card &a, const Card &b, Suit trump)
 {
-  if(b.is_right_bower(trump))
-    return true;
-  else if(b.is_left_bower(trump) && !(a.is_right_bower(trump)))
-    return true;
-  else if(b.is_trump(trump) && !a.is_trump(trump))
-    return true;
-  else if (b.is_trump(trump) && a.is_trump(trump))
-    return b > a;
-  else
-    return false;
-    // Not Done!!!
+  Card temp_led = Card(ACE, trump);
+  return Card_less(a, b, temp_led, trump);
 }
 
 //EFFECTS Returns true if a is lower value than b.  Uses both the trump suit
 //  and the suit led to determine order, as described in the spec.
-bool Card_less(const Card &a, const Card &b, const Card &led_card, Suit trump);
+bool Card_less(const Card &a, const Card &b, const Card &led_card, Suit trump)
+{
+  Suit led_suit = led_card.get_suit();
+  //NOT dOne
+  if(b.is_right_bower(trump))
+    return true;
+  else if(b.is_left_bower(trump) && !(a.is_right_bower(trump)))
+    return true;
+  else if(a.is_right_bower(trump) || a.is_left_bower(trump))
+    return false;
+  else if(b.is_trump(trump) && !a.is_trump(trump))
+    return true;
+  else if (b.is_trump(trump) && a.is_trump(trump))
+  {
+    if(a.is_right_bower(trump) || a.is_left_bower(trump))
+      return false;
+    else 
+      return b > a;
+  }
+  else if(b.get_suit() == led_suit && a.get_suit() != led_suit)
+    return true;
+  else if(a.get_suit() == led_suit && b.get_suit() != led_suit)
+    return false;
+  else
+    return b > a;
+}
