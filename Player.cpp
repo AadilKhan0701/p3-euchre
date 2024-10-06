@@ -3,16 +3,19 @@
 #include <string>
 #include <vector>
 #include <cassert>
+#include <algorithm>
+using namespace std;
 
 class SimplePlayer : public Player
 {
 public:
 
-    SimplePlayer(const std::string &name)
+    //constructor
+    SimplePlayer(const string &name)
         :name(name) {}
 
     //EFFECTS returns player's name
-    const std::string & get_name() const override
+    const string & get_name() const override
     {
         return name;
     }
@@ -107,7 +110,8 @@ public:
                     highest = c; 
             }
         }
-
+        auto loc = find(hand.begin(), hand.end(), highest);
+        hand.erase(loc);
         return highest;
     }
 
@@ -117,30 +121,45 @@ public:
     Card play_card(const Card &led_card, Suit trump) override
     {
         assert(!hand.empty());
-        Card h_or_l = hand.at(0); //highest for lead suit, or lowest card
+        Card select;//highest for lead suit, or lowest card
         bool led = num_suit_hand(led_card.get_suit(), 'p') > 0;
 
+        //assign h_or_l based on if led is true or not
+        //(ensures first card isnt of trump suit)
+        if(led)
+        {
+            for(Card c : hand)
+                {if(c.get_suit() != trump)
+                { select = c;  break;}  }
+        }
+        else
+            select = hand.at(0);
+
+        //choosing the card to be played
         for(Card c : hand)
         {
             if(led) //highest led card
             {
-                if(Card_less(h_or_l, c, led_card, trump) &&
-                    c.get_suit() == led_card.get_suit())
-                        h_or_l = c;
+                if (Card_less(select, c, led_card, trump) 
+                    && c.get_suit() == led_card.get_suit())
+                        select = c;
             }
             else //lowest card
             {
-                if(Card_less(c, h_or_l, led_card, trump))
-                    h_or_l = c;
+                if(Card_less(c, select, led_card, trump))
+                    select = c;
             }
         }
-        return h_or_l;
+
+        auto loc = find(hand.begin(), hand.end(), select);
+        hand.erase(loc);
+        return select;
     }
     
 
 private:
-    std::string name;
-    std::vector<Card> hand;
+    string name;
+    vector<Card> hand;
 
     int check_hand(Suit check) const
     {
@@ -156,15 +175,12 @@ private:
         return count;
     }
 
+    /*  p is for how many cards of the check
+    suit is in the players hand
+        n is for how many cards of suits other
+    than check is in the players hand       */
     int num_suit_hand(Suit check, char pn) const
     {
-        /* 
-           p is for how many cards of that suit
-            is in the players hand
-           n is for how many cards of suits other
-            than check is in the players hand
-        */
-
         int p_count = 0;
         int n_count = 0;
 
@@ -182,20 +198,129 @@ private:
     }
 };
 
+
+
+
+
+class HumanPlayer : public Player
+{
+public:
+
+    //constructor
+    HumanPlayer(string name)
+    : name(name) {}
+
+    //EFFECTS returns player's name
+    const string & get_name() const override
+    {
+        return name;
+    }
+
+    //REQUIRES player has less than MAX_HAND_SIZE cards
+    //EFFECTS  adds Card c to Player's hand
+    void add_card(const Card &c) override
+    {
+        assert(hand.size() < MAX_HAND_SIZE);
+        hand.push_back(c);
+        sort(hand.begin(), hand.end());
+    }
+
+    //REQUIRES round is 1 or 2
+    //MODIFIES order_up_suit
+    //EFFECTS If Player wishes to order up a trump suit then return true and
+    //  change order_up_suit to desired suit.  If Player wishes to pass, then do
+    //  not modify order_up_suit and return false.
+    bool make_trump(const Card &upcard, bool is_dealer,
+                    int round, Suit &order_up_suit) const override
+    {
+        string decision;
+
+        print_hand();
+        cout << "Human player " << name << ", please enter a suit, or \"pass\":\n";
+        cin >> decision;
+
+        if(decision != "pass")
+        {
+            order_up_suit = string_to_suit(decision);
+            return true;
+        }
+        else
+            return false;
+    }
+
+    //REQUIRES Player has at least one card
+    //EFFECTS  Player adds one card to hand and removes one card from hand.
+    void add_and_discard(const Card &upcard) override
+    {
+        int selected;
+        print_hand();
+        cout << "Discard upcard: [-1]\n";
+        cout << "Human player " << name << ", please select a card to discard:\n";
+        cin >> selected;
+        if(selected != -1)
+            hand.at(selected) = upcard;
+        sort(hand.begin(), hand.end());
+    }
+
+    //REQUIRES Player has at least one card
+    //EFFECTS  Leads one Card from Player's hand according to their strategy
+    //  "Lead" means to play the first Card in a trick.  The card
+    //  is removed the player's hand.
+    Card lead_card(Suit trump) override
+    {
+        int selected;
+        print_hand();
+        cout << "Human player " << name << ", please select a card:\n";
+        cin >> selected;
+        return hand.at(selected);
+    }
+
+    //REQUIRES Player has at least one card
+    //EFFECTS  Plays one Card from Player's hand according to their strategy.
+    //  The card is removed from the player's hand.
+    Card play_card(const Card &led_card, Suit trump) override
+    {
+        int selected;
+        print_hand();
+        cout << "Human player " << name << ", please select a card:\n";
+        cin >> selected;
+        return hand.at(selected);
+    }
+
+
+private:
+    string name;
+    vector<Card> hand;
+
+    //prints hand of player
+    void print_hand() const 
+    {
+        for (size_t i=0; i < hand.size(); ++i)
+            cout << "Human player " << name << "'s hand: "
+                << "[" << i << "] " << hand[i] << "\n";
+    }
+};
+
+
+
+
+
 //EFFECTS: Returns a pointer to a player with the given name and strategy
 //To create an object that won't go out of scope when the function returns,
 //use "return new Simple(name)" or "return new Human(name)"
 //Don't forget to call "delete" on each Player* after the game is over
-Player * Player_factory(const std::string &name, const std::string &strategy)
+Player * Player_factory(const string &name, const string &strategy)
 {
     if(strategy == "Simple")
         return new SimplePlayer(name);
-    //dont have other rn
+    if(strategy == "Human")
+        return new HumanPlayer(name);
+    // if strategy is an unrecognized string create Simple Player
     return new SimplePlayer(name);
 }
 
 //EFFECTS: Prints player's name to os
-std::ostream & operator<<(std::ostream &os, const Player &p)
+ostream & operator<<(ostream &os, const Player &p)
 {
     os << p.get_name();
     return os;

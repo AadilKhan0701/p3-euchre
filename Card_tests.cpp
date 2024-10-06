@@ -16,7 +16,7 @@ TEST(test_card_ctor)
 }
 
 // Add more test cases here
-TEST(test_stream_operator)
+TEST(Stream_operator_func)
 {
     //testing ostream
     ostringstream os1;
@@ -55,7 +55,7 @@ TEST(test_stream_operator)
     ASSERT_EQUAL(c8, Card(KING, DIAMONDS));
 }
 
-TEST(Norm_func)
+TEST(All_base_func)
 {
     Card c1;
     Card c2 = Card(TWO, DIAMONDS);
@@ -74,7 +74,7 @@ TEST(Norm_func)
     ASSERT_EQUAL(c5.get_rank(), JACK);
     ASSERT_EQUAL(c6.get_suit(), CLUBS);
     ASSERT_EQUAL(c7.get_rank(), NINE);
-    ASSERT_EQUAL(c8.get_suit(SPADES), CLUBS);
+    ASSERT_EQUAL(c8.get_suit(), SPADES);
 
     //testing bower, face, trump
     ASSERT_FALSE(c1.is_face_or_ace());
@@ -97,7 +97,7 @@ TEST(Norm_func)
     ASSERT_FALSE(Card_less(c5, c8, c3, CLUBS));
 }
 
-TEST(NOTH)
+TEST(Card_less_func)
 {
     Card rb = Card(JACK, SPADES);   //right bower
     Card lb = Card(JACK, CLUBS);    //left bower
