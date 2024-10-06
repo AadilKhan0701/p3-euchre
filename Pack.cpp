@@ -84,12 +84,16 @@ void Pack::shuffle()
     for(shuffle= 0; shuffle < 7; shuffle++)
     {       k= 0; //k< pack_size
         for(c= 0; c< PACK_SIZE/2; c++)
-        {
-            temp.at(k) = cards.at(c+13);
-            k++;
+        {   
+            if(k< PACK_SIZE)
+            {
+                temp.at(k) = cards.at(c+12);
+                k++;
+            }
             temp.at(k) = cards.at(c);
             k++;
         }
+        cards = temp;
     }
 }
 

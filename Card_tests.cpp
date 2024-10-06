@@ -95,7 +95,60 @@ TEST(Norm_func)
     ASSERT_TRUE(Card_less(c2, c3, c6, HEARTS));
     ASSERT_TRUE(Card_less(c4, c7, SPADES));
     ASSERT_FALSE(Card_less(c5, c8, c3, CLUBS));
+}
 
+TEST(NOTH)
+{
+    Card rb = Card(JACK, SPADES);   //right bower
+    Card lb = Card(JACK, CLUBS);    //left bower
+    Card ts = Card(QUEEN, SPADES);  //trump suit
+    Card ls = Card(TEN, HEARTS);   //lead suit
+    Card ns = Card(KING, CLUBS);    //not special
+
+    ASSERT_FALSE(Card_less(rb, lb, SPADES));
+    ASSERT_FALSE(Card_less(rb, lb, ls, SPADES));
+    ASSERT_FALSE(Card_less(rb, ts, SPADES));
+    ASSERT_FALSE(Card_less(rb, ts, ls, SPADES));
+    ASSERT_FALSE(Card_less(rb, ls, SPADES));
+    ASSERT_FALSE(Card_less(rb, ls, ls, SPADES));
+    ASSERT_FALSE(Card_less(rb, ns, SPADES));
+    ASSERT_FALSE(Card_less(rb, ns, ls, SPADES));
+
+    ASSERT_TRUE(Card_less(lb, rb, SPADES));
+    ASSERT_TRUE(Card_less(lb, rb, ls, SPADES));
+    ASSERT_FALSE(Card_less(lb, ts, SPADES));
+    ASSERT_FALSE(Card_less(lb, ts, ls, SPADES));
+    ASSERT_FALSE(Card_less(lb, ls, SPADES));
+    ASSERT_FALSE(Card_less(lb, ls, ls, SPADES));
+    ASSERT_FALSE(Card_less(lb, ns, SPADES));
+    ASSERT_FALSE(Card_less(lb, ns, ls, SPADES));
+
+    ASSERT_TRUE(Card_less(ts, rb, SPADES));
+    ASSERT_TRUE(Card_less(ts, rb, ls, SPADES));
+    ASSERT_TRUE(Card_less(ts, lb, SPADES));
+    ASSERT_TRUE(Card_less(ts, lb, ls, SPADES));
+    ASSERT_FALSE(Card_less(ts, ls, SPADES));
+    ASSERT_FALSE(Card_less(ts, ls, ls, SPADES));
+    ASSERT_FALSE(Card_less(ts, ns, SPADES));
+    ASSERT_FALSE(Card_less(ts, ns, ls, SPADES));
+
+    ASSERT_TRUE(Card_less(ls, rb, SPADES));
+    ASSERT_TRUE(Card_less(ls, rb, ls, SPADES));
+    ASSERT_TRUE(Card_less(ls, lb, SPADES));
+    ASSERT_TRUE(Card_less(ls, lb, ls, SPADES));
+    ASSERT_TRUE(Card_less(ls, ts, SPADES));
+    ASSERT_TRUE(Card_less(ls, ts, ls, SPADES));
+    ASSERT_TRUE(Card_less(ls, ns, SPADES));
+    ASSERT_FALSE(Card_less(ls, ns, ls, SPADES));
+
+    ASSERT_TRUE(Card_less(ns, rb, SPADES));
+    ASSERT_TRUE(Card_less(ns, rb, ls, SPADES));
+    ASSERT_TRUE(Card_less(ns, lb, SPADES));
+    ASSERT_TRUE(Card_less(ns, lb, ls, SPADES));
+    ASSERT_TRUE(Card_less(ns, ts, SPADES));
+    ASSERT_TRUE(Card_less(ns, ts, ls, SPADES));
+    ASSERT_FALSE(Card_less(ns, ls, SPADES));
+    ASSERT_TRUE(Card_less(ns, ls, ls, SPADES));
 }
 
 TEST_MAIN()

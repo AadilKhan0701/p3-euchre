@@ -286,7 +286,7 @@ bool Card_less(const Card &a, const Card &b, Suit trump)
 bool Card_less(const Card &a, const Card &b, const Card &led_card, Suit trump)
 {
   Suit led_suit = led_card.get_suit();
-  //NOT dOne
+
   if(b.is_right_bower(trump))
     return true;
   else if(b.is_left_bower(trump) && !(a.is_right_bower(trump)))
@@ -302,6 +302,8 @@ bool Card_less(const Card &a, const Card &b, const Card &led_card, Suit trump)
     else 
       return b > a;
   }
+  else if(a.is_trump(trump))
+    return false;
   else if(b.get_suit() == led_suit && a.get_suit() != led_suit)
     return true;
   else if(a.get_suit() == led_suit && b.get_suit() != led_suit)
