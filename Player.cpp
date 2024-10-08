@@ -55,11 +55,12 @@ public:
             Suit sameColor = upcard.get_suit(upcard.get_suit());
 
             if(check_hand(sameColor) > 0 || is_dealer)
-            {
+            { 
                 order_up_suit = sameColor;
                 return true;
             }
-            return false;
+            else
+                return false;
         }
         return false;
     }
@@ -179,10 +180,8 @@ private:
 
         for(Card c : hand)
         {
-            if(c.get_suit() == check &&
-                (c.is_face_or_ace() ||
-                 c.is_left_bower(check)))
-                    count++;
+            if(c.is_face_or_ace() && c.is_trump(check))
+                count++;
         }
         return count;
     }
