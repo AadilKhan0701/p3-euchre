@@ -151,4 +151,27 @@ TEST(Card_less_func)
     ASSERT_TRUE(Card_less(ns, ls, ls, SPADES));
 }
 
+TEST(operation_func)
+{
+    Card c1 = Card(FIVE, CLUBS);
+    Card c2 = Card(EIGHT, SPADES);
+    Card c3 = Card(EIGHT, SPADES);
+    Card c4 = Card(EIGHT, DIAMONDS);
+    Card c5 = Card(ACE, DIAMONDS);
+
+    ASSERT_TRUE(c1 < c2);
+    ASSERT_TRUE(c1 <= c2);
+    ASSERT_TRUE(c1 != c2);
+    ASSERT_TRUE(c2 <= c3);
+    ASSERT_TRUE(c2 == c3);
+    ASSERT_TRUE(c2 >= c3);
+    ASSERT_TRUE(c2 < c4);
+    ASSERT_TRUE(c2 <= c4);
+    ASSERT_TRUE(c2 != c4);
+    ASSERT_TRUE(c2 < c5);
+    ASSERT_TRUE(c2 <= c5);
+    ASSERT_TRUE(c2 != c5);
+
+}
+
 TEST_MAIN()

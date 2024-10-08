@@ -94,14 +94,25 @@ public:
     Card lead_card(Suit trump) override
     {
         assert(!hand.empty());
-        Card highest = hand.at(0);
         bool only_trump = num_suit_hand(trump, 'n') == 0;
+        Card highest;
+
+        //ensures the first value isn't trump
+        //if non trump cards are in hand
+        if(!only_trump)
+        {
+            for(Card c : hand)
+                {if(!c.is_trump(trump))
+                { highest = c;  break;}  }
+        }
+        else
+            highest = hand.at(0);
 
         for(Card c : hand)
         {
             if(!only_trump)
             {
-                if(highest < c && c.get_suit() != trump)
+                if(highest < c && !c.is_trump(trump))
                     highest = c;
             }
             else
@@ -110,6 +121,7 @@ public:
                     highest = c; 
             }
         }
+        
         auto loc = find(hand.begin(), hand.end(), highest);
         hand.erase(loc);
         return highest;
@@ -129,7 +141,7 @@ public:
         if(led)
         {
             for(Card c : hand)
-                {if(c.get_suit() != trump)
+                {if(!c.is_trump(trump))
                 { select = c;  break;}  }
         }
         else
@@ -186,7 +198,7 @@ private:
 
         for(Card c : hand)
         {
-            if(c.get_suit() == check)
+            if(c.get_suit() == check || c.is_trump(check))
                 p_count++;
             else
                 n_count++;
