@@ -15,12 +15,14 @@ class Game {
     void deal(int dealer);
     void make_trump(int dealer, Suit* trump);
     void play_hand(int leading, Suit* trump);
-    void awarding_point(vector<int> trick_points, vector<Card*> trick_hand, Card* leadCard, Suit* trump);
+    void awarding_points_trick(vector<int> trick_points, vector<Card*> trick_hand, Card* leadCard, Suit* trump);
+    void awarding_points_hand(vector<int> trick_points);
     
     Pack * pack;
     bool shuffling;
     int points;
     vector<Player*> players;
+    vector<pair<int, bool>> team_points;
 };
 
 int main(int argc, char* argv[]) 
@@ -48,15 +50,15 @@ int main(int argc, char* argv[])
 }
 
 Game::Game(Pack * cp, bool s, int ptw, vector<Player*> pl)
-    : pack(cp), shuffling(s), points(ptw), players(pl) {}
+    : pack(cp), shuffling(s), points(ptw), players(pl), team_points({{0, false}, {0, false}}) {}
 
 //Game play
 void Game::play()
 {
     int c, dealer;
     Suit trump;
-
-    for(c= 0; c< points; c++)
+    c = 0;
+    while(team_points.at(0).first < points && team_points.at(1).first < points)
     {
         /* **Setup Table** */
         shuffle();
@@ -70,6 +72,17 @@ void Game::play()
 
         /* **Playing Hand** */
         play_hand(dealer, &trump);
+        c++;
+    }
+
+    //Winner is...
+    if(team_points.at(0).first > team_points.at(1).first)
+    {
+        cout << players.at(0)->get_name() << " and " << players.at(2)->get_name() << " win!" << endl;
+    }
+    else
+    {
+        cout << players.at(1)->get_name() << " and " << players.at(3)->get_name() << " win!" << endl;
     }
 }
 
@@ -81,6 +94,10 @@ void Game::make_trump(int dealer, Suit* trump)
     bool picked = false; //if the trump suit has been picked yet
     int c, next; //c is used for rounds; next is used to keep track player turn
     bool is_dealer; //if the player is the dealer or not
+
+    //resets which team ordered up trump 
+    team_points.at(0).second = false;
+    team_points.at(1).second = false;
     
     for(c= 1; c< 3; c++)
     {
@@ -92,7 +109,9 @@ void Game::make_trump(int dealer, Suit* trump)
             
             if(picked)
             {
-                cout << players.at(next)->get_name() << " orders up " << *trump << endl;
+                cout << players.at(next)->get_name() << " orders up " << *trump << endl << endl;
+                if(next%2 == 0) {team_points.at(0).second = true;}
+                else {team_points.at(0).second = true;}
                 break;
             }
             else
@@ -101,6 +120,7 @@ void Game::make_trump(int dealer, Suit* trump)
             }
 
         }while(next != dealer);
+        if(picked && c == 1) {(players.at(dealer)->add_and_discard(upCard));}
         if(picked){break;}
     }
 }
@@ -110,7 +130,7 @@ void Game::play_hand(int leading, Suit* trump)
     vector<int> trick_points = {0, 0, 0, 0}; //vector of the points accrued by each player
     vector<Card*> trick(4);  //array of the cards played that trick
     int current = leading;
-    Card leadCard;
+    Card leadCard, card_1, card_2, card_3;
     int c;
 
     for(c= 0; c< 5; c++)
@@ -123,26 +143,89 @@ void Game::play_hand(int leading, Suit* trump)
 
         //following the led card
         current = (current+1)%4;
-        trick.at(current) = &players.at(current)->play_card(leadCard, *trump);
-        cout << trick.at(current) << " played by " << players.at(current)->get_name() << endl;
+        card_1 = players.at(current)->play_card(leadCard, *trump);
+        trick.at(current) = &card_1;
+        cout << card_1 << " played by " << players.at(current)->get_name() << endl;
 
         current = (current+1)%4;
-        trick.at(current) = &players.at(current)->play_card(leadCard, *trump);
-        cout << trick.at(current) << " played by " << players.at(current)->get_name() << endl;
+        card_2 = players.at(current)->play_card(leadCard, *trump);
+        trick.at(current) = &card_2;
+        cout << card_2 << " played by " << players.at(current)->get_name() << endl;
 
         current = (current+1)%4;
-        trick.at(current) = &players.at(current)->play_card(leadCard, *trump);
-        cout << trick.at(current) << " played by " << players.at(current)->get_name() << endl;
+        card_3 = players.at(current)->play_card(leadCard, *trump);
+        trick.at(current) = &card_3;
+        cout << card_3 << " played by " << players.at(current)->get_name() << endl;
 
-        awarding_point(trick_points, trick, &leadCard, trump);
+        current = (current+1)%4;
+        awarding_points_trick(trick_points, trick, &leadCard, trump);
     }
+    awarding_points_hand(trick_points);
 }
 
 //determining who the point goes to for each trick
-void Game::awarding_point(vector<int> trick_points, vector<Card*> trick_hand, Card* leadCard, Suit* trump)
+void Game::awarding_points_trick(vector<int> trick_points, vector<Card*> trick_hand, Card* leadCard, Suit* trump)
 {
-    //index of the highest, first Card, for loop to find highest, then add points to person who wins trick 
+    Card highest = *trick_hand.at(0);
+    int index = 0;
+    int c;
 
+    for(c= 1; c< trick_hand.size(); c++)
+    {
+        if(Card_less(highest, *trick_hand.at(c), *leadCard, *trump))
+        {
+            highest = *trick_hand.at(c);
+            index = c;
+        }
+    }
+    trick_points.at(index)++;
+    cout << players.at(index)->get_name() << " takes the trick" << endl << endl;
+}
+
+void Game::awarding_points_hand(vector<int> trick_points)
+{
+    int sum_team_1 = trick_points.at(0) + trick_points.at(2);
+    int sum_team_2 = trick_points.at(1) + trick_points.at(3);
+
+    if(sum_team_1 > sum_team_2)
+    {
+        cout << players.at(0)->get_name() << " and " << players.at(2)->get_name()
+             << " win the hand" << endl;
+        //determines if march or euchred and adds points
+        if(team_points.at(0).second && sum_team_1 == 5)
+        {
+            team_points.at(0).first += 2;
+            cout << "march!" << endl << endl;
+        }
+        else if(!team_points.at(0).second && sum_team_1 > 2) 
+        {
+            team_points.at(0).first +=2;
+            cout << "euchred!" << endl << endl;
+        }
+        else {team_points.at(0).first++;}
+    }
+    else
+    {
+        cout << players.at(1)->get_name() << " and " << players.at(3)->get_name()
+             << " win the hand" << endl;
+        //determines if march or euchred and adds points
+        if(team_points.at(1).second && sum_team_2 == 5)
+        {
+            team_points.at(1).first += 2;
+            cout << "march!" << endl << endl;
+        }
+        else if(!team_points.at(1).second && sum_team_2 > 2) 
+        {
+            team_points.at(1).first +=2;
+            cout << "euchred!" << endl << endl;
+        }
+        else {team_points.at(1).first++;}
+    }
+
+    cout << players.at(0)->get_name() << " and " << players.at(2)->get_name()
+         << " have " << team_points.at(0).first << " points" << endl;
+    cout << players.at(1)->get_name() << " and " << players.at(3)->get_name()
+         << " have " << team_points.at(1).first << " points" << endl << endl;
 }
 
 //if shuffling is turned on (true), shuffle the deck
