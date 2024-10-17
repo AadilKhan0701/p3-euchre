@@ -95,8 +95,8 @@ public:
     Card lead_card(Suit trump) override
     {
         assert(!hand.empty());
-        bool only_trump = num_suit_hand(trump, trump,'n') == 0;
-        Card highest;
+        Card highest = Card(ACE, trump);
+        bool only_trump = num_suit_hand(highest, trump,'n') == 0;
 
         //ensures the first value isn't trump
         //if non trump cards are in hand
@@ -134,12 +134,12 @@ public:
     Card play_card(const Card &led_card, Suit trump) override
     {
         assert(!hand.empty());
-        bool led = num_suit_hand(led_card.get_suit(), trump, 'p') > 0;
+        bool led = num_suit_hand(led_card, trump, 'p') > 0;
         Card select;
 
         if(led) //**If cards of the lead suit are in player hand
         {   //--If lead suit is the trump suit
-            if(led_card.get_suit() == trump)
+            if(led_card.is_trump(trump))
             {
                 select = hand.at(0);
                 for(Card c : hand)
@@ -202,17 +202,17 @@ private:
     suit is in the players hand
         n is for how many cards of suits other
     than check is in the players hand       */
-    int num_suit_hand(Suit check, Suit trump, char pn) const
+    int num_suit_hand(Card check, Suit trump, char pn) const
     {
         int p_count = 0;
         int n_count = 0;
-        bool suitCT = check == trump;
+        bool suitCT = check.is_trump(trump);
 
         for(Card c : hand)
         {   
             if(suitCT && c.is_trump(trump))
                 p_count++;
-            else if(!suitCT && c.get_suit() == check && !c.is_trump(trump)) //left bower
+            else if(!suitCT && c.get_suit() == check.get_suit() && !c.is_trump(trump))
                 p_count++;
             else
                 n_count++;
