@@ -295,10 +295,17 @@ public:
     Card lead_card(Suit trump) override
     {
         int selected;
+        Card card_select;
+
         print_hand();
         cout << "Human player " << name << ", please select a card:\n";
         cin >> selected;
-        return hand.at(selected);
+
+        card_select = hand.at(selected);
+        auto loc = find(hand.begin(), hand.end(), card_select);
+        hand.erase(loc);
+
+        return card_select;
     }
 
     //REQUIRES Player has at least one card
@@ -328,13 +335,12 @@ private:
     //prints hand of player
     void print_hand() const 
     {
-        for (size_t i=0; i < hand.size(); ++i)
+        int c;
+        for (c= 0; c < hand.size(); c++)
             cout << "Human player " << name << "'s hand: "
-                << "[" << i << "] " << hand[i] << "\n";
+                << "[" << c << "] " << hand[c] << "\n";
     }
 };
-
-
 
 
 

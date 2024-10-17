@@ -78,8 +78,6 @@ void Game::play()
         /* **Playing Hand** */
         play_hand(dealer, &trump);
         c++;
-        if(c == 9)
-            cout << "begining" << endl << endl;
     }
 
     //Winner is...
