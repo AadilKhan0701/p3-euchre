@@ -285,7 +285,11 @@ bool Card_less(const Card &a, const Card &b, Suit trump)
 //  and the suit led to determine order, as described in the spec.
 bool Card_less(const Card &a, const Card &b, const Card &led_card, Suit trump)
 {
-  Suit led_suit = led_card.get_suit();
+  Suit led_suit;
+  if(led_card.is_trump(trump)) //mainly for left bower
+    led_suit = trump;
+  else
+    led_suit = led_card.get_suit();
 
   if(b.is_right_bower(trump))
     return true;

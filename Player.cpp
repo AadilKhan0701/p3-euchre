@@ -307,10 +307,17 @@ public:
     Card play_card(const Card &led_card, Suit trump) override
     {
         int selected;
+        Card card_select;
+
         print_hand();
         cout << "Human player " << name << ", please select a card:\n";
         cin >> selected;
-        return hand.at(selected);
+        
+        card_select = hand.at(selected);
+        auto loc = find(hand.begin(), hand.end(), card_select);
+        hand.erase(loc);
+
+        return card_select;
     }
 
 

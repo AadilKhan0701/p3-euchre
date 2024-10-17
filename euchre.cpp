@@ -15,8 +15,6 @@ class Game {
     void deal(const int dealer);
     void make_trump(const int dealer, Suit* trump);
     void play_hand(const int leading, const Suit* trump);
-    void awarding_points_trick(vector<int> &trick_points, const vector<Card*> trick_hand,
-                               const Card* leadCard, const Suit* trump, int &current);
     void awarding_points_hand(const vector<int> trick_points);
     
     Pack * pack;
@@ -46,6 +44,11 @@ int main(int argc, char* argv[])
     Player * player_3 = Player_factory(argv[8], argv[9]);
     Player * player_4 = Player_factory(argv[10], argv[11]);
     vector<Player*> players = {player_1, player_2, player_3, player_4};
+
+    cout << argv[0] << " " << argv[1] << " " << argv[2] << " " << argv[3] << " " 
+         << argv[4] << " " << argv[5] << " " << argv[6] << " " << argv[7] << " "
+         << argv[8] << " " << argv[9] << " " << argv[10]<< " " << argv[11]<< " "<<endl;
+
     Game game = Game(&pack, shuffle, points, players);
     game.play();
 }
@@ -75,6 +78,8 @@ void Game::play()
         /* **Playing Hand** */
         play_hand(dealer, &trump);
         c++;
+        if(c == 9)
+            cout << "begining" << endl << endl;
     }
 
     //Winner is...
@@ -141,8 +146,8 @@ void Game::play_hand(const int leading, const Suit* trump)
     vector<int> trick_points = {0, 0, 0, 0}; //vector of the points accrued by each player
     vector<Card*> trick(4);  //array of the cards played that trick
     int current = (leading+1)%4;
-    Card leadCard, card_1, card_2, card_3;
-    int c;
+    Card leadCard, card_1, card_2, card_3, highest;
+    int c, k, index;
 
     for(c= 0; c< 5; c++)
     {   
@@ -167,32 +172,26 @@ void Game::play_hand(const int leading, const Suit* trump)
         trick.at(current) = &card_3;
         cout << card_3 << " played by " << players.at(current)->get_name() << endl;
 
-        awarding_points_trick(trick_points, trick, &leadCard, trump, current);
+        //awarding_points_trick(trick_points, trick, &leadCard, trump, current);
+        highest = *trick.at(0);
+        index = 0;
+
+        for(k= 1; k< trick.size(); k++)
+        {
+            if(Card_less(highest, *trick.at(k), leadCard, *trump))
+            {
+                highest = *trick.at(k);
+                index = k;
+            }
+        }
+        trick_points.at(index)++;
+        current = index;
+        cout << players.at(index)->get_name() << " takes the trick" << endl << endl;
     }
     awarding_points_hand(trick_points);
 }
 
-//determining who the point goes to for each trick
-void Game::awarding_points_trick(vector<int> &trick_points, const vector<Card*> trick_hand,
-                                 const Card* leadCard, const Suit* trump, int& current)
-{
-    Card highest = *trick_hand.at(0);
-    int index = 0;
-    int c;
-
-    for(c= 1; c< trick_hand.size(); c++)
-    {
-        if(Card_less(highest, *trick_hand.at(c), *leadCard, *trump))
-        {
-            highest = *trick_hand.at(c);
-            index = c;
-        }
-    }
-    trick_points.at(index)++;
-    current = index;
-    cout << players.at(index)->get_name() << " takes the trick" << endl << endl;
-}
-
+//determing which team gets how many points for each hand
 void Game::awarding_points_hand(const vector<int> trick_points)
 {
     int sum_team_1 = trick_points.at(0) + trick_points.at(2);
