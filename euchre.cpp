@@ -51,6 +51,7 @@ int main(int argc, char* argv[])
 
     Game game = Game(&pack, shuffle, points, players);
     game.play();
+    return 0;
 }
 
 Game::Game(Pack * cp, bool s, int ptw, vector<Player*> pl)
