@@ -12,11 +12,11 @@ class Game {
     void play();
  private:
     void shuffle();
-    void deal(int dealer);
-    void make_trump(int dealer, Suit* trump);
-    void play_hand(int leading, Suit* trump);
-    void awarding_points_trick(vector<int> trick_points, vector<Card*> trick_hand, Card* leadCard, Suit* trump);
-    void awarding_points_hand(vector<int> trick_points);
+    void deal(const int dealer);
+    void make_trump(const int dealer, Suit* trump);
+    void play_hand(const int leading, const Suit* trump);
+    void awarding_points_trick(vector<int> &trick_points, const vector<Card*> trick_hand, const Card* leadCard, const Suit* trump, int &current);
+    void awarding_points_hand(const vector<int> trick_points);
     
     Pack * pack;
     bool shuffling;
@@ -87,7 +87,7 @@ void Game::play()
 }
 
 //picking trump card for that round
-void Game::make_trump(int dealer, Suit* trump)
+void Game::make_trump(const int dealer, Suit* trump)
 {   
     Card upCard = pack->deal_one();
     cout << upCard << " turned up" << endl;
@@ -111,7 +111,7 @@ void Game::make_trump(int dealer, Suit* trump)
             {
                 cout << players.at(next)->get_name() << " orders up " << *trump << endl << endl;
                 if(next%2 == 0) {team_points.at(0).second = true;}
-                else {team_points.at(0).second = true;}
+                else {team_points.at(1).second = true;}
                 break;
             }
             else
@@ -125,18 +125,17 @@ void Game::make_trump(int dealer, Suit* trump)
     }
 }
 
-void Game::play_hand(int leading, Suit* trump)
+void Game::play_hand(const int leading, const Suit* trump)
 {
     vector<int> trick_points = {0, 0, 0, 0}; //vector of the points accrued by each player
     vector<Card*> trick(4);  //array of the cards played that trick
-    int current = leading;
+    int current = (leading+1)%4;
     Card leadCard, card_1, card_2, card_3;
     int c;
 
     for(c= 0; c< 5; c++)
     {   
         //leading the trick
-        current = (current+1)%4;
         leadCard = players.at(current)->lead_card(*trump);
         trick.at(current) = &leadCard;
         cout << leadCard << " led by " << players.at(current)->get_name() << endl;
@@ -157,14 +156,13 @@ void Game::play_hand(int leading, Suit* trump)
         trick.at(current) = &card_3;
         cout << card_3 << " played by " << players.at(current)->get_name() << endl;
 
-        current = (current+1)%4;
-        awarding_points_trick(trick_points, trick, &leadCard, trump);
+        awarding_points_trick(trick_points, trick, &leadCard, trump, current);
     }
     awarding_points_hand(trick_points);
 }
 
 //determining who the point goes to for each trick
-void Game::awarding_points_trick(vector<int> trick_points, vector<Card*> trick_hand, Card* leadCard, Suit* trump)
+void Game::awarding_points_trick(vector<int> &trick_points, const vector<Card*> trick_hand, const Card* leadCard, const Suit* trump, int& current)
 {
     Card highest = *trick_hand.at(0);
     int index = 0;
@@ -179,10 +177,11 @@ void Game::awarding_points_trick(vector<int> trick_points, vector<Card*> trick_h
         }
     }
     trick_points.at(index)++;
+    current = index;
     cout << players.at(index)->get_name() << " takes the trick" << endl << endl;
 }
 
-void Game::awarding_points_hand(vector<int> trick_points)
+void Game::awarding_points_hand(const vector<int> trick_points)
 {
     int sum_team_1 = trick_points.at(0) + trick_points.at(2);
     int sum_team_2 = trick_points.at(1) + trick_points.at(3);
@@ -195,12 +194,12 @@ void Game::awarding_points_hand(vector<int> trick_points)
         if(team_points.at(0).second && sum_team_1 == 5)
         {
             team_points.at(0).first += 2;
-            cout << "march!" << endl << endl;
+            cout << "march!" << endl;
         }
         else if(!team_points.at(0).second && sum_team_1 > 2) 
         {
             team_points.at(0).first +=2;
-            cout << "euchred!" << endl << endl;
+            cout << "euchred!" << endl;
         }
         else {team_points.at(0).first++;}
     }
@@ -236,7 +235,7 @@ void Game::shuffle()
 }
 
 //deal the cards in the pack to each Player
-void Game::deal(int dealer)
+void Game::deal(const int dealer)
 {
     int first = (dealer+1)%4;
     int second = (dealer+2)%4;
