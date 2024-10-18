@@ -21,7 +21,10 @@ class Game {
     bool shuffling;
     int points;
     vector<Player*> players;
-    vector<pair<int, bool>> team_points;
+    vector<int> team_points; 
+    vector<bool> trump_team;
+    // team points and trump team used to be a vector pair in order 
+    // to keep track and use only variable but have since been seperated 
 };
 
 int main(int argc, char* argv[]) 
@@ -51,12 +54,17 @@ int main(int argc, char* argv[])
 
     Game game = Game(&pack, shuffle, points, players);
     game.play();
+
+    delete player_1;
+    delete player_2;
+    delete player_3;
+    delete player_4;
     return 0;
 }
 
 Game::Game(Pack * cp, bool s, int ptw, vector<Player*> pl)
     : pack(cp), shuffling(s), points(ptw), players(pl), 
-      team_points({{0, false}, {0, false}}) {}
+      team_points({0, 0}), trump_team({false, false}) {}
 
 //Game play
 void Game::play()
@@ -64,7 +72,7 @@ void Game::play()
     int c, dealer;
     Suit trump;
     c = 0;
-    while(team_points.at(0).first < points && team_points.at(1).first < points)
+    while(team_points.at(0) < points && team_points.at(1) < points)
     {
         /* **Setup Table** */
         shuffle();
@@ -82,7 +90,7 @@ void Game::play()
     }
 
     //Winner is...
-    if(team_points.at(0).first > team_points.at(1).first)
+    if(team_points.at(0) > team_points.at(1))
     {
         cout << players.at(0)->get_name() << " and "
              << players.at(2)->get_name() << " win!" << endl;
@@ -104,8 +112,8 @@ void Game::make_trump(const int dealer, Suit* trump)
     bool is_dealer; //if the player is the dealer or not
 
     //resets which team ordered up trump 
-    team_points.at(0).second = false;
-    team_points.at(1).second = false;
+    trump_team.at(0) = false;
+    trump_team.at(1) = false;
     
     for(c= 1; c< 3; c++)
     {
@@ -120,9 +128,9 @@ void Game::make_trump(const int dealer, Suit* trump)
                 cout << players.at(next)->get_name() << " orders up " 
                      << *trump << endl;
                 if(next%2 == 0)
-                    team_points.at(0).second = true;
+                    trump_team.at(0) = true;
                 else
-                    team_points.at(1).second = true;
+                    trump_team.at(1) = true;
                 break;
             }
             else
@@ -201,40 +209,40 @@ void Game::awarding_points_hand(const vector<int> trick_points)
         cout << players.at(0)->get_name() << " and " << players.at(2)->get_name()
              << " win the hand" << endl;
         //determines if march or euchred and adds points
-        if(team_points.at(0).second && sum_team_1 == 5)
+        if(trump_team.at(0) && sum_team_1 == 5)
         {
-            team_points.at(0).first += 2;
+            team_points.at(0) += 2;
             cout << "march!" << endl;
         }
-        else if(!team_points.at(0).second && sum_team_1 > 2) 
+        else if(!trump_team.at(0) && sum_team_1 > 2) 
         {
-            team_points.at(0).first +=2;
+            team_points.at(0) +=2;
             cout << "euchred!" << endl;
         }
-        else {team_points.at(0).first++;}
+        else {team_points.at(0)++;}
     }
     else
     {
         cout << players.at(1)->get_name() << " and " << players.at(3)->get_name()
              << " win the hand" << endl;
         //determines if march or euchred and adds points
-        if(team_points.at(1).second && sum_team_2 == 5)
+        if(trump_team.at(1) && sum_team_2 == 5)
         {
-            team_points.at(1).first += 2;
+            team_points.at(1) += 2;
             cout << "march!" << endl;
         }
-        else if(!team_points.at(1).second && sum_team_2 > 2) 
+        else if(!trump_team.at(1) && sum_team_2 > 2) 
         {
-            team_points.at(1).first +=2;
+            team_points.at(1) +=2;
             cout << "euchred!" << endl;
         }
-        else {team_points.at(1).first++;}
+        else {team_points.at(1)++;}
     }
 
     cout << players.at(0)->get_name() << " and " << players.at(2)->get_name()
-         << " have " << team_points.at(0).first << " points" << endl;
+         << " have " << team_points.at(0) << " points" << endl;
     cout << players.at(1)->get_name() << " and " << players.at(3)->get_name()
-         << " have " << team_points.at(1).first << " points" << endl << endl;
+         << " have " << team_points.at(1) << " points" << endl << endl;
 }
 
 //if shuffling is turned on (true), shuffle the deck
