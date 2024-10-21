@@ -1,5 +1,4 @@
 #include <iostream>
-#include <istream>
 #include <fstream>
 #include "Card.hpp"
 #include "Pack.hpp"
